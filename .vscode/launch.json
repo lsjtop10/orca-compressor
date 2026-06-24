@@ -1,0 +1,31 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Attach GDB",
+            "type": "cppdbg",
+            "request": "launch",
+            // 1. 왼쪽 탐색기에 보이는 builddir 폴더 내의 실행 파일 경로를 정확히 지목
+            "program": "${workspaceFolder}/builddir/huffman_compress.exe",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            // 2. MSYS2 UCRT64 내부의 절대 디버거 경로 주입
+            "setupCommands": [
+                {
+                    "description": "gdb 구조체 정렬 및 예쁜 출력 활성화",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                }
+            ],
+            "preLaunchTask": "Meson: Build huffman_compress:executable"
+
+        }
+    ]
+}
