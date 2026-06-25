@@ -1,11 +1,13 @@
-#include "Decoder.h"
-#include "huffman.h"
-#include "ownership.h"
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+
+#include "ownership.h"
+#include "huffman.h"
+
+#include "Decoder.h"
 
 // 비트 패킹 중 남는 비트는 허프만 코드 길이보다 항상 작거나 같다.
 // 허프만 코드 길이는 최대 심볼수까지 나올 수 있으므로 최소 256비트보다는 커야
@@ -84,21 +86,22 @@ Move(StreamDecoder*) create_StreamDecoder(StreamDecoderConfiguration cfg) {
 }
 
 static bool nextBit(StreamDecoder* sd) {
-
-
     if(sd->encodedBufOffset >= 8){
         sd->encodedBufIdx++;
         sd->encodedBufOffset = 0;
     }
 
+    // 유효한 인덱스를 벗어나면 버퍼를 비우고 처음부터 읽어라
     if (sd->encodedBufIdx >= sd->encodedBufSize) {
         sd->encodedBufIdx = 0;
         sd->encodedBufSize = 0;
     } 
 
+    // 버퍼가 비어 있으면 가져와라
     if (sd->encodedBufSize == 0) {
         sd->encodedBufSize =
             sd->fetchEncodedData(sd->encodedDataStream, sd->encodedBuf, 0, sd->encodedBufCapacity);
+        //이때 가져올 비트가 없으면 예외처리.
     }
 
     uint8_t mask = 1 << (8 - sd->encodedBufOffset - 1);
@@ -128,9 +131,9 @@ static uint8_t findNextSymbol(StreamDecoder* sd, Borrow(HuffmanTreeNode*) htRoot
     }
 
     if (htRoot->left != NULL && bit == false) {
-        findNextSymbol(sd, htRoot->left);
+        return findNextSymbol(sd, htRoot->left);
     } else if (htRoot->right != NULL && bit == true) {
-        findNextSymbol(sd, htRoot->right);
+        return findNextSymbol(sd, htRoot->right);
     } else {
         // 만약에 NextBit가 가라고 하는 방향에 노드가 없으면 에러.
         return 0;
