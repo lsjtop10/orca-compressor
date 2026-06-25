@@ -39,6 +39,7 @@ void decodeStream_StreamDecoder(StreamDecoder* sd, Borrow(HuffmanTreeNode*) htRo
 
     for(int i = 0; i < sd->numOriginalBytes; i++){
         uint8_t symbol = findNextSymbol(sd, htRoot);
+        writeByte_BufferedOutputStream(sd->bos, symbol);
     }
 
     flush_BufferedOutputStream(sd->bos);
