@@ -93,25 +93,25 @@ typedef struct BufferedOutputStream {
      */
     size_t (*flush)(const void* stream, uint8_t* buf, size_t offset, size_t bufSize);
 
-} BufferedOutptStream;
+} BufferedOutputStream;
 
-void init_BufferdOutputStream(BufferedOutptStream* s, Borrow(void*) outputStream, size_t (*flush)(const void* stream, uint8_t* buf, size_t offset, size_t bufSize));
+void init_BufferdOutputStream(BufferedOutputStream* s, Borrow(void*) outputStream, size_t (*flush)(const void* stream, uint8_t* buf, size_t offset, size_t bufSize));
 
 /** 
 * @brief Write a bit to the end of the stream. 
 */
-void writeBit_BufferedOutputStream(BufferedOutptStream* s,bool bit);
+void writeBit_BufferedOutputStream(BufferedOutputStream* s,bool bit);
 
 /**
  * @brief Write a byte to the stream sequentially from the current bit position.
  */
-void packAndWriteByte_BufferedOutputStream(BufferedOutptStream* s,uint8_t byte);
-void writeByte_BufferedOutputStream(BufferedOutptStream* s, uint8_t byte);
+void packAndWriteByte_BufferedOutputStream(BufferedOutputStream* s,uint8_t byte);
+void writeByte_BufferedOutputStream(BufferedOutputStream* s, uint8_t byte);
 /**
 * Zerofill remaing bits and flushes buffer to stream.
 */
-size_t flush_BufferedOutputStream(BufferedOutptStream* s);
-size_t totalWritedSize_BufferdOutputStream(BufferedOutptStream* s);
+size_t flush_BufferedOutputStream(BufferedOutputStream* s);
+size_t totalWritedSize_BufferdOutputStream(BufferedOutputStream* s);
 
 
 #endif

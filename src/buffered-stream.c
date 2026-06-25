@@ -100,7 +100,7 @@ uint8_t nextByte_BufferdInputStream(BufferedInputStream* s) {
 
 size_t totalReadSize_BufferdInputStream(BufferedInputStream* s) { return s->totalReadBytes; }
 
-void init_BufferdOutputStream(BufferedOutptStream* s, Borrow(void*) outputStream,
+void init_BufferdOutputStream(BufferedOutputStream* s, Borrow(void*) outputStream,
                               size_t (*flush)(const void* stream, uint8_t* buf, size_t offset,
                                               size_t bufSize)) {
     s->outputStream = (void*)outputStream;
@@ -114,7 +114,7 @@ void init_BufferdOutputStream(BufferedOutptStream* s, Borrow(void*) outputStream
 /**
  * @brief Write a bit to the end of the stream.
  */
-void writeBit_BufferedOutputStream(BufferedOutptStream* s, bool bit) {
+void writeBit_BufferedOutputStream(BufferedOutputStream* s, bool bit) {
 
     if (s->pos > STREAM_BUFFER_CAPACITY) {
         s->flush(s->outputStream, s->buf, 0, STREAM_BUFFER_CAPACITY);
@@ -139,7 +139,7 @@ void writeBit_BufferedOutputStream(BufferedOutptStream* s, bool bit) {
 /**
  * @brief Write a byte to the stream sequentially from the current bit position.
  */
-void packAndWriteByte_BufferedOutputStream(BufferedOutptStream* s, uint8_t byte) {
+void packAndWriteByte_BufferedOutputStream(BufferedOutputStream* s, uint8_t byte) {
     for (int i = 0; i < 8; i++) {
         uint8_t mask = 1 << (8 - s->offset - 1);
         bool bit = (byte & mask) != 0;
@@ -147,7 +147,7 @@ void packAndWriteByte_BufferedOutputStream(BufferedOutptStream* s, uint8_t byte)
     }
 }
 
-void writeByte_BufferedOutputStream(BufferedOutptStream* s, uint8_t byte) {
+void writeByte_BufferedOutputStream(BufferedOutputStream* s, uint8_t byte) {
 
     if (s->offset != 0) {
         s->pos++;
@@ -164,7 +164,7 @@ void writeByte_BufferedOutputStream(BufferedOutptStream* s, uint8_t byte) {
     s->pos++;
 }
 
-size_t flush_BufferedOutputStream(BufferedOutptStream* s) {
+size_t flush_BufferedOutputStream(BufferedOutputStream* s) {
     while(s->offset != 0){
         writeBit_BufferedOutputStream(s, 0);
     }
@@ -172,6 +172,6 @@ size_t flush_BufferedOutputStream(BufferedOutptStream* s) {
     return s->flush(s->outputStream, s->buf, 0, s->pos);
 }
 
-size_t totalWritedSize_BufferdOutputStream(BufferedOutptStream* s){
+size_t totalWritedSize_BufferdOutputStream(BufferedOutputStream* s){
     return s->totalWritedBytes;
 }
