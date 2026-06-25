@@ -116,7 +116,7 @@ void init_BufferdOutputStream(BufferedOutputStream* s, Borrow(void*) outputStrea
  */
 void writeBit_BufferedOutputStream(BufferedOutputStream* s, bool bit) {
 
-    if (s->pos > STREAM_BUFFER_CAPACITY) {
+    if (s->pos > STREAM_BUFFER_CAPACITY - 1) {
         s->flush(s->outputStream, s->buf, 0, STREAM_BUFFER_CAPACITY);
         s->pos = 0;
         s->offset = 0;
@@ -154,7 +154,7 @@ void writeByte_BufferedOutputStream(BufferedOutputStream* s, uint8_t byte) {
         s->offset = 0;
     }
 
-    if (s->pos > STREAM_BUFFER_CAPACITY) {
+    if (s->pos > STREAM_BUFFER_CAPACITY - 1) {
         s->flush(s->outputStream, s->buf, 0, s->pos);
         // TODO: 예외처리
         s->pos = 0;
@@ -165,13 +165,11 @@ void writeByte_BufferedOutputStream(BufferedOutputStream* s, uint8_t byte) {
 }
 
 size_t flush_BufferedOutputStream(BufferedOutputStream* s) {
-    while(s->offset != 0){
+    while (s->offset != 0) {
         writeBit_BufferedOutputStream(s, 0);
     }
-  
+
     return s->flush(s->outputStream, s->buf, 0, s->pos);
 }
 
-size_t totalWritedSize_BufferdOutputStream(BufferedOutputStream* s){
-    return s->totalWritedBytes;
-}
+size_t totalWritedSize_BufferdOutputStream(BufferedOutputStream* s) { return s->totalWritedBytes; }
