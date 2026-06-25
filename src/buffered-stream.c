@@ -1,5 +1,6 @@
 
 #include "ownership.h"
+#include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
 
@@ -164,6 +165,10 @@ void writeByte_BufferedOutputStream(BufferedOutptStream* s, uint8_t byte) {
 }
 
 size_t flush_BufferedOutputStream(BufferedOutptStream* s) {
+    while(s->offset != 0){
+        writeBit_BufferedOutputStream(s, 0);
+    }
+  
     return s->flush(s->outputStream, s->buf, 0, s->pos);
 }
 

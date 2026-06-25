@@ -107,6 +107,9 @@ void writeBit_BufferedOutputStream(BufferedOutptStream* s,bool bit);
  */
 void packAndWriteByte_BufferedOutputStream(BufferedOutptStream* s,uint8_t byte);
 void writeByte_BufferedOutputStream(BufferedOutptStream* s, uint8_t byte);
+/**
+* Zerofill remaing bits and flushes buffer to stream.
+*/
 size_t flush_BufferedOutputStream(BufferedOutptStream* s);
 size_t totalWritedSize_BufferdOutputStream(BufferedOutptStream* s);
 
