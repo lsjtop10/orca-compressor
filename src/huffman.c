@@ -50,7 +50,7 @@ HuffmanTreeNode* build_HuffmanTree(Borrow(FreqTable*) t) {
     init_PQueue(&h, hasLessFreq);
 
     for (uint8_t i = 0; i < MAX_SYMBOL_SIZE; i++) {
-        uint64_t freq = lookupFreq_FreqTable(t, i);
+        uint64_t freq = lookupFreq_FreqTable((FreqTable*)t, i);
 
         if (freq != 0) {
             insert_PQueue(&h, make_HuffmanTreeNode(freq, i));
@@ -141,7 +141,7 @@ void buildTable_HuffmanCodeTable(HuffmanCodeTable* t, Borrow(HuffmanTreeNode*) h
 
 
 // 💡 [최종 합: 트리가 진짜 똑바로 생겼는지 숲을 보는 덤프 함수
-static void _debug_dump_tree(Borrow(HuffmanTreeNode*) node, int depth) {
+void _debug_dump_tree(Borrow(HuffmanTreeNode*) node, int depth) {
     if (node == NULL) return;
 
     // 가독성을 위해 깊이만큼 들여쓰기 출력

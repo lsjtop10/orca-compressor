@@ -54,4 +54,7 @@ size_t lookupCodeLength_HuffmanCodeTable(HuffmanCodeTable* t, uint8_t c);
 void setCode_HuffmanCodeTable(HuffmanCodeTable* t, uint8_t c, HuffmanCode code, size_t length);
 void buildTable_HuffmanCodeTable(HuffmanCodeTable* t, Borrow(HuffmanTreeNode*) hTreeRoot, HuffmanCode code, size_t codeLength);
 
+
+
+void _debug_dump_tree(Borrow(HuffmanTreeNode*) node, int depth);
 #endif // HUFFMAN_H_INCLUDED
