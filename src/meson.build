@@ -1,17 +1,14 @@
-source_files += files(
+source_files = files(
     'huffman.c',
     'pqueue.c',
-    'main.c',
     'encoder.c',
     'decoder.c',
+    'utils.c',
     'buffered-stream.c'
 )
 
-source_files += files(
-    'huffman.h',
-    'ownership.h',
-    'huffman.h',
-    'pqueue.h',
-    'buffered-stream.h',
-    'errors.h',
-)
+core_lib = static_library('huffman_core',source_files)
+
+src_libs += core_lib
+main_file = files('main.c')
+
