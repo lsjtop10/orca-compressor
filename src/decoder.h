@@ -23,4 +23,11 @@ typedef struct StreamDecoder{
 
 void decodeStream_StreamDecoder(StreamDecoder* const se, Borrow(HuffmanTreeNode*)  huffmanTreeRoot);
 
+typedef struct{
+    BufferedInputStream* bis;
+    uint32_t streamSize;
+} HuffmanTreeDeSirializer;
+
+HuffmanTreeNode* deserializeTree_HuffmanTreeSirializer(HuffmanTreeDeSirializer* tds);
+
 #endif

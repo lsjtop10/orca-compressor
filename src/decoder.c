@@ -1,5 +1,7 @@
 #include "Decoder.h"
 #include "buffered-stream.h"
+#include "huffman.h"
+#include <stdint.h>
 
 // 비트 패킹 중 남는 비트는 허프만 코드 길이보다 항상 작거나 같다.
 // 허프만 코드 길이는 최대 심볼수까지 나올 수 있으므로 최소 256비트보다는 커야
@@ -43,4 +45,17 @@ void decodeStream_StreamDecoder(StreamDecoder* sd, Borrow(HuffmanTreeNode*) htRo
     }
 
     flush_BufferedOutputStream(sd->bos);
+}
+
+HuffmanTreeNode* deserializeTree_HuffmanTreeSirializer(HuffmanTreeDeSirializer* s){
+    int16_t val = 0;
+    nextData_BufferdInputStream(s->bis,(uint8_t*)&val, sizeof(uint16_t));
+
+    if(val == -2){return NULL;}
+    HuffmanTreeNode* n = make_HuffmanTreeNode(0, val);
+    
+    n->left = deserializeTree_HuffmanTreeSirializer(s);
+    n->right = deserializeTree_HuffmanTreeSirializer(s); 
+
+    return n;
 }

@@ -59,8 +59,7 @@ bool hasNextByte_BufferdInputStream(BufferedInputStream* s);
 uint8_t nextByte_BufferdInputStream(BufferedInputStream* s);
 size_t totalReadSize_BufferdInputStream(BufferedInputStream* s);
 
-// bool hasNextMultiByte();
-// size_t nextMultiByte(uint8_t* ptr, size_t size);
+void nextData_BufferdInputStream(BufferedInputStream* s, uint8_t* ptr, size_t size);
 
 
 // DO NOT CHANGE ANY FIELDS
@@ -107,6 +106,8 @@ void writeBit_BufferedOutputStream(BufferedOutputStream* s,bool bit);
  */
 void packAndWriteByte_BufferedOutputStream(BufferedOutputStream* s,uint8_t byte);
 void writeByte_BufferedOutputStream(BufferedOutputStream* s, uint8_t byte);
+
+void writeData_BufferedOUtputStream(BufferedOutputStream *s, uint8_t* ptr, size_t size);
 /**
 * Zerofill remaing bits and flushes buffer to stream.
 */

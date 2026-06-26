@@ -7,7 +7,7 @@
 #include "ownership.h"
 #include "buffered-stream.h"
 
-// 힙 영역에 자체 포인터를 갖는 변수이고 자체 상태 캡슐화가 매우 중요한 구조체라서 불투명 포인터 사용.
+
 typedef struct StreamEncoder {
     /**
     `Ownership`: borrow
@@ -21,4 +21,11 @@ typedef struct StreamEncoder {
 }StreamEncoder;
 
 void encodeStream_StreamEncoder(StreamEncoder* se, Borrow(HuffmanCodeTable*) ct);
+
+typedef struct{
+    BufferedOutputStream* bos;
+} HuffmanTreeSirializer;
+
+void serializeTree_HuffmanTreeSirializer(HuffmanTreeSirializer* ts, Borrow(HuffmanTreeNode*) htRoot);
+
 #endif

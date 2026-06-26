@@ -6,6 +6,24 @@
 
 #include "buffered-stream.h"
 
+static inline bool isLittleEndian(){
+    // uint16_t test = 0x1234;
+    // uint8_t* ptr = (uint8_t*)&test;
+    // return ptr[0] == 0x34;
+#if defined(__BYTE_ORDER__) && __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+    // 1. GCC/Clang이 빌드할 때 빅 엔디안인 걸 알면 
+    // 이 함수 전체를 그냥 'return false;' 라는 단 한 줄의 상수로 치환해 버립니다.
+    return false;
+#elif defined(_MSC_VER) && defined(_M_PPC)
+    // 2. 구형 MSVC 빅 엔디안 환경 대응용 안전장치
+    return false;
+#else
+    // 3. 윈도우(x86_64), 리눅스, 안드로이드 등 전 세계 99%의 리틀 엔디안 환경
+    // 컴파일러가 빌드 타임에 이 함수를 아예 'return true;' 상수로 박아버립니다!
+    return true;
+#endif
+} 
+
 void init_BufferdInputStream(BufferedInputStream* s, Borrow(void*) inputStream,
                              size_t (*fetch)(const void* stream, uint8_t* buf, size_t bufSize)) {
 
@@ -98,6 +116,19 @@ uint8_t nextByte_BufferdInputStream(BufferedInputStream* s) {
     return byte;
 }
 
+void nextData_BufferdInputStream(BufferedInputStream* s, uint8_t* ptr, size_t size){
+    for(int i = 0; i < size; i++){
+        if(!hasNextByte_BufferdInputStream(s)){
+            return;
+        }
+        if(isLittleEndian()){
+            ptr[size - i - 1] = nextByte_BufferdInputStream(s);
+        }else{
+            ptr[i] = nextByte_BufferdInputStream(s);
+        }
+    }
+}
+
 size_t totalReadSize_BufferdInputStream(BufferedInputStream* s) { return s->totalReadBytes; }
 
 void init_BufferdOutputStream(BufferedOutputStream* s, Borrow(void*) outputStream,
@@ -162,6 +193,17 @@ void writeByte_BufferedOutputStream(BufferedOutputStream* s, uint8_t byte) {
 
     s->buf[s->pos] = byte;
     s->pos++;
+}
+
+
+void writeData_BufferedOUtputStream(BufferedOutputStream *s, uint8_t* ptr, size_t size){
+    for(int i = 0; i < size; i++){
+        if(isLittleEndian()){
+            writeByte_BufferedOutputStream(s,ptr[size - i - 1] );
+        }else{
+            writeByte_BufferedOutputStream(s, ptr[i]);
+        }
+    }
 }
 
 size_t flush_BufferedOutputStream(BufferedOutputStream* s) {
