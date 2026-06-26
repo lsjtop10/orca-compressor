@@ -1,2 +1,10 @@
+CompileFlags:
+    CompilationDatabase: "builddir"
 Documentation:
-  CommentFormat: Doxygen
+    CommentFormat: Doxygen
+Diagnostics:
+  ClangTidy:
+    Add: [
+      "bugprone-*",
+      "readability-duplicate-include"
+    ]

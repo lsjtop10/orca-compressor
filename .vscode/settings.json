@@ -4,7 +4,7 @@
     "clangd.arguments": [
         "--compile-commands-dir=${workspaceFolder}/build",
         "--completion-style=bundled",
-        
+        "--header-insertion=never"
     ],
-    "C_Cpp.default.compileCommands": "c:\\Users\\lsjto\\OneDrive\\Documents\\Source\\code-blocks\\huffman-compression\\builddir/compile_commands.json"
+    "C_Cpp.default.compileCommands": "c:\\Users\\lsjto\\source\\huffman-compression\\builddir/compile_commands.json"
 }

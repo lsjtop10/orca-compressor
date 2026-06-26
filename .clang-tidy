@@ -1,0 +1,8 @@
+# .clang-tidy
+Checks: '-*,bugprone-*,cert-*,clang-analyzer-*,misc-*,modernize-*,performance-*, readability-duplicate-include, -bugprone-easily-swappable-parameters'
+WarningsAsErrors: 'readability-duplicate-include'
+
+# 빌드 시스템과 소스 구조의 꼬임을 방지하기 위한 세부 규칙 추가
+CheckOptions:
+  - key: readability-identifier-naming.FunctionCase
+    value: camelCase

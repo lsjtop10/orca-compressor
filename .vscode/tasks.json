@@ -10,6 +10,16 @@
 			],
 			"group": "build",
 			"label": "Meson: Build huffman_compress:executable"
-		}
+		},
+		{
+			"type": "meson",
+			"target": "run_test:executable",
+			"mode": "build",
+			"problemMatcher": [
+				"$meson-gcc"
+			],
+			"group": "build",
+			"label": "Meson: Build run_test:executable"
+		},
 	]
 }
