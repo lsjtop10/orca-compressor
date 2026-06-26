@@ -7,14 +7,14 @@ project(
     'c_std=c11',
     'cpp_std=c++17',
     'warning_level=3',
-    'werror=false'
+    'werror=false',
   ],
 )
 
 cc = meson.get_compiler('c')
 
 # 1. 의존성 및 인크루드 경로 확보
-gtest_dep = dependency('gtest', main: true, fallback: ['gtest', 'gtest_main_dep'])
+gtest_dep = dependency('gtest', main: true, fallback: ['gtest', 'gtest_main_dep'], default_options: ['default_library=static'])
 m_dep = cc.find_library('m', required: false)
 
 inc_dirs = include_directories('src', is_system: false)
