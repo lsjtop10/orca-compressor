@@ -1,118 +1,66 @@
 #ifndef BUFFERED_STREAM_H_INCLUDED
 #define BUFFERED_STREAM_H_INCLUDED
 
+#include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
-#include <stdbool.h>
+
 #include "ownership.h"
 
-#define STREAM_BUFFER_CAPACITY 10
+#define STREAM_BUFFER_CAPACITY 4096
 
-// DO NOT CHANGE ANY FIELDS
-// CHANGING FIELD WILL CAUSE MEMORY CORRUPTION
-typedef struct BufferedInputStream {
-    uint8_t buf[STREAM_BUFFER_CAPACITY];
-    size_t bufSize;
+typedef struct BufferedInputStream BufferedInputStream;
+Move(BufferedInputStream*)
+    create_BufferedInputStream(Borrow(void*) inputStream,
+                              size_t (*fetch)(const void* stream, uint8_t* buf, size_t bufSize));
 
-    // DO NOT ACCESS DIRACTLY. MUST CALL totalReadSize
-    size_t totalReadBytes;
-
-    size_t pos;
-    int offset;
-
-    /**
-    *@brief Pointer to a struct containing context of the raw data stream.
-    * `ownership`: borrow
-    */
-    void* inputStream;
-
-    /**
-     * @brief Callback function fetching bytes from the stream.
-     * @details This Callback function fetches bytes at ot less then the bufSize.   
-     * **Params**:
-     * **stream**: A struct containing context of the stream.
-     * **buf**: The Pointer to the start address of the buffer.
-     * from the offset.
-     * **bufSize**: Size of the buffer.
-     * 
-     * Return:
-     * Num of bytes feched. Return 0 when fails to fetch raw data.
-     */
-
-    size_t (*fetch)(const void* stream, uint8_t* buf,size_t bufSize);
-} BufferedInputStream;
-
-
-void init_BufferdInputStream(BufferedInputStream* s, Borrow(void*) inputStream, size_t (*fetch)(const void* stream, uint8_t* buf, size_t bufSize));
+void reset_BufferedInputStream(BufferedInputStream* s, Borrow(void*) inputStream,
+                              size_t (*fetch)(const void* stream, uint8_t* buf, size_t bufSize));
+/**
+ * @brief
+ */
+bool hasNextBit_BufferedInputStream(BufferedInputStream* s);
 
 /**
-* @brief 
-*/
-bool hasNextBit_BufferdInputStream(BufferedInputStream* s);
+ * @brief
+ */
+bool nextBit_BufferedInputStream(BufferedInputStream* s);
+
+bool hasNextByte_BufferedInputStream(BufferedInputStream* s);
+uint8_t nextByte_BufferedInputStream(BufferedInputStream* s);
+size_t totalReadSize_BufferedInputStream(BufferedInputStream* s);
+
+void nextData_BufferedInputStream(BufferedInputStream* s, uint8_t* ptr, size_t size);
+void destroy_BufferedInputStream(Move(BufferedInputStream*) s);
+
+typedef struct BufferedOutputStream BufferedOutputStream;
+
+Move(BufferedOutputStream*)
+    create_BufferedOutputStream(Borrow(void*) outputStream,
+                               size_t (*flush)(const void* stream, uint8_t* buf, size_t offset,
+                                               size_t bufSize));
+
+void reset_BufferedOutputStream(BufferedOutputStream* s, Borrow(void*) outputStream,
+                               size_t (*flush)(const void* stream, uint8_t* buf, size_t offset,
+                                               size_t bufSize));
 
 /**
-* @brief 
-*/
-bool nextBit_BufferdInputStream(BufferedInputStream* s);
-
-bool hasNextByte_BufferdInputStream(BufferedInputStream* s);
-uint8_t nextByte_BufferdInputStream(BufferedInputStream* s);
-size_t totalReadSize_BufferdInputStream(BufferedInputStream* s);
-
-void nextData_BufferdInputStream(BufferedInputStream* s, uint8_t* ptr, size_t size);
-
-
-// DO NOT CHANGE ANY FIELDS
-// CHANGING FIELD WILL CAUSE MEMORY CORRUPTION
-typedef struct BufferedOutputStream {
-    uint8_t buf[STREAM_BUFFER_CAPACITY];
-    size_t pos;
-    int offset;
-
-    size_t totalWritedBytes;
-
-    /**
-    * @brief Pointer to a struct containing context of the output stream. 
-    * `ownership`: borrow
-    */
-    void* outputStream;
-
-      /**
-     * @brief Callback function flushing bytes from the stream.
-     * @details This Callback function flushes bytes at ot less then the bufSize.   
-     * **Params**:
-     * `stream`: A struct containing context of the stream.
-     * `buf`: The Pointer to the start address of the buffer.
-     * `offset`: The offset from start address from the buffer. Must fill data
-     * from the offset.
-     * `bufSize`: Size of the buffer.
-     * 
-     * **Return**:
-     * Num of bytes flushed. Return 0 when fails to flush data.
-     */
-    size_t (*flush)(const void* stream, uint8_t* buf, size_t offset, size_t bufSize);
-
-} BufferedOutputStream;
-
-void init_BufferdOutputStream(BufferedOutputStream* s, Borrow(void*) outputStream, size_t (*flush)(const void* stream, uint8_t* buf, size_t offset, size_t bufSize));
-
-/** 
-* @brief Write a bit to the end of the stream. 
-*/
-void writeBit_BufferedOutputStream(BufferedOutputStream* s,bool bit);
+ * @brief Write a bit to the end of the stream.
+ */
+void writeBit_BufferedOutputStream(BufferedOutputStream* s, bool bit);
 
 /**
  * @brief Write a byte to the stream sequentially from the current bit position.
  */
-void packAndWriteByte_BufferedOutputStream(BufferedOutputStream* s,uint8_t byte);
+void packAndWriteByte_BufferedOutputStream(BufferedOutputStream* s, uint8_t byte);
 void writeByte_BufferedOutputStream(BufferedOutputStream* s, uint8_t byte);
 
-void writeData_BufferedOUtputStream(BufferedOutputStream *s, uint8_t* ptr, size_t size);
+void writeData_BufferedOutputStream(BufferedOutputStream* s, uint8_t* ptr, size_t size);
 /**
-* Zerofill remaing bits and flushes buffer to stream.
-*/
+ * Zerofill remaing bits and flushes buffer to stream.
+ */
 size_t flush_BufferedOutputStream(BufferedOutputStream* s);
-size_t totalWritedSize_BufferdOutputStream(BufferedOutputStream* s);
-
+size_t totalWritedSize_BufferedOutputStream(BufferedOutputStream* s);
+void destroy_BufferedOutputStream(Move(BufferedOutputStream*) s);
 
 #endif

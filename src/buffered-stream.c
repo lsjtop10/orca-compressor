@@ -3,10 +3,12 @@
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
+#include <stdlib.h>
 
 #include "buffered-stream.h"
 
-static inline bool isLittleEndian(){
+
+static inline bool isLittleEndian(void){
     // uint16_t test = 0x1234;
     // uint8_t* ptr = (uint8_t*)&test;
     // return ptr[0] == 0x34;
@@ -24,9 +26,48 @@ static inline bool isLittleEndian(){
 #endif
 } 
 
-void init_BufferdInputStream(BufferedInputStream* s, Borrow(void*) inputStream,
-                             size_t (*fetch)(const void* stream, uint8_t* buf, size_t bufSize)) {
+struct BufferedInputStream {
+    uint8_t buf[STREAM_BUFFER_CAPACITY];
+    size_t bufSize;
 
+    // DO NOT ACCESS DIRACTLY. MUST CALL totalReadSize
+    size_t totalReadBytes;
+
+    size_t pos;
+    int offset;
+
+    /**
+    *@brief Pointer to a struct containing context of the raw data stream.
+    * `ownership`: borrow
+    */
+    void* inputStream;
+
+    /**
+     * @brief Callback function fetching bytes from the stream.
+     * @details This Callback function fetches bytes at ot less then the bufSize.   
+     * **Params**:
+     * **stream**: A struct containing context of the stream.
+     * **buf**: The Pointer to the start address of the buffer.
+     * from the offset.
+     * **bufSize**: Size of the buffer.
+     * 
+     * Return:
+     * Num of bytes feched. Return 0 when fails to fetch raw data.
+     */
+
+    size_t (*fetch)(const void* stream, uint8_t* buf,size_t bufSize);
+};
+
+Move(BufferedInputStream*) create_BufferedInputStream(Borrow(void*) inputStream,
+                             size_t (*fetch)(const void* stream, uint8_t* buf, size_t bufSize)) {
+    BufferedInputStream* s = malloc(sizeof(BufferedInputStream));
+
+    reset_BufferedInputStream(s, inputStream, fetch);
+    return s;
+}
+
+void reset_BufferedInputStream(BufferedInputStream* s, Borrow(void*) inputStream,
+                              size_t (*fetch)(const void* stream, uint8_t* buf, size_t bufSize)){
     s->inputStream = (void*)inputStream;
     s->fetch = fetch;
 
@@ -41,7 +82,7 @@ void init_BufferdInputStream(BufferedInputStream* s, Borrow(void*) inputStream,
  * from the stream.
  *
  */
-bool hasNextBit_BufferdInputStream(BufferedInputStream* s) {
+bool hasNextBit_BufferedInputStream(BufferedInputStream* s) {
 
     // Offset이 7보다 크다는 말은 다음 바이트이 첫 번째 비트를
     if (s->offset > 7) {
@@ -50,14 +91,14 @@ bool hasNextBit_BufferdInputStream(BufferedInputStream* s) {
     }
     // bit를 가져오는 연산은 바이트 내에서 이루어지므로
     // pos가 유효한 바이트이면 그 오프셋은 반드시 유효한 바이트이다.
-    return hasNextByte_BufferdInputStream(s);
+    return hasNextByte_BufferedInputStream(s);
 }
 
 /**
  * @brief
  */
-bool nextBit_BufferdInputStream(BufferedInputStream* s) {
-    if (!hasNextBit_BufferdInputStream(s)) {
+bool nextBit_BufferedInputStream(BufferedInputStream* s) {
+    if (!hasNextBit_BufferedInputStream(s)) {
         return false;
         // TODO: 예외처리
     }
@@ -76,7 +117,7 @@ bool nextBit_BufferdInputStream(BufferedInputStream* s) {
     return bit;
 }
 
-bool hasNextByte_BufferdInputStream(BufferedInputStream* s) {
+bool hasNextByte_BufferedInputStream(BufferedInputStream* s) {
 
     // 일단 가리키는 idx가 작기만 하면 true
     if (s->pos < s->bufSize) {
@@ -96,7 +137,7 @@ bool hasNextByte_BufferdInputStream(BufferedInputStream* s) {
 }
 
 // If there is remaing bits at a byte. It will be discerded.
-uint8_t nextByte_BufferdInputStream(BufferedInputStream* s) {
+uint8_t nextByte_BufferedInputStream(BufferedInputStream* s) {
 
     // offset이 0이 아니면 읽던 바이트 버리고 다음 바이트 읽도록 함.
     if (s->offset != 0) {
@@ -104,7 +145,7 @@ uint8_t nextByte_BufferdInputStream(BufferedInputStream* s) {
         s->offset = 7;
     }
 
-    if (!hasNextByte_BufferdInputStream(s)) {
+    if (!hasNextByte_BufferedInputStream(s)) {
         return false;
         // TODO: 예외처리
     }
@@ -116,30 +157,77 @@ uint8_t nextByte_BufferdInputStream(BufferedInputStream* s) {
     return byte;
 }
 
-void nextData_BufferdInputStream(BufferedInputStream* s, uint8_t* ptr, size_t size){
-    for(int i = 0; i < size; i++){
-        if(!hasNextByte_BufferdInputStream(s)){
+void nextData_BufferedInputStream(BufferedInputStream* s, uint8_t* ptr, size_t size){
+    for(size_t i = 0; i < size; i++){
+        if(!hasNextByte_BufferedInputStream(s)){
             return;
         }
         if(isLittleEndian()){
-            ptr[size - i - 1] = nextByte_BufferdInputStream(s);
+            ptr[size - i - 1] = nextByte_BufferedInputStream(s);
         }else{
-            ptr[i] = nextByte_BufferdInputStream(s);
+            ptr[i] = nextByte_BufferedInputStream(s);
         }
     }
 }
 
-size_t totalReadSize_BufferdInputStream(BufferedInputStream* s) { return s->totalReadBytes; }
+size_t totalReadSize_BufferedInputStream(BufferedInputStream* s) { return s->totalReadBytes; }
 
-void init_BufferdOutputStream(BufferedOutputStream* s, Borrow(void*) outputStream,
+void destroy_BufferedInputStream(Move(BufferedInputStream*) s){
+    if(s != NULL){
+        free(s);
+    }
+}
+
+struct BufferedOutputStream {
+    uint8_t buf[STREAM_BUFFER_CAPACITY];
+    size_t pos;
+    int offset;
+
+    size_t totalWritedBytes;
+
+    /**
+    * @brief Pointer to a struct containing context of the output stream. 
+    * `ownership`: borrow
+    */
+    void* outputStream;
+
+      /**
+     * @brief Callback function flushing bytes from the stream.
+     * @details This Callback function flushes bytes at ot less then the bufSize.   
+     * **Params**:
+     * `stream`: A struct containing context of the stream.
+     * `buf`: The Pointer to the start address of the buffer.
+     * `offset`: The offset from start address from the buffer. Must fill data
+     * from the offset.
+     * `bufSize`: Size of the buffer.
+     * 
+     * **Return**:
+     * Num of bytes flushed. Return 0 when fails to flush data.
+     */
+    size_t (*flush)(const void* stream, uint8_t* buf, size_t offset, size_t bufSize);
+
+};
+
+Move(BufferedOutputStream*) create_BufferedOutputStream( Borrow(void*) outputStream,
                               size_t (*flush)(const void* stream, uint8_t* buf, size_t offset,
-                                              size_t bufSize)) {
+                                size_t bufSize)) {
+    BufferedOutputStream* s = (BufferedOutputStream*)malloc(sizeof(BufferedOutputStream));
+    reset_BufferedOutputStream(s, outputStream, flush);
+
+    return s;
+}
+
+void reset_BufferedOutputStream(BufferedOutputStream* s, Borrow(void*) outputStream,
+                              size_t (*flush)(const void* stream, uint8_t* buf, size_t offset,
+                                size_t bufSize)){
+
     s->outputStream = (void*)outputStream;
     s->flush = flush;
 
     s->pos = 0;
     s->offset = 0;
     s->totalWritedBytes = 0;
+
 }
 
 /**
@@ -196,8 +284,8 @@ void writeByte_BufferedOutputStream(BufferedOutputStream* s, uint8_t byte) {
 }
 
 
-void writeData_BufferedOUtputStream(BufferedOutputStream *s, uint8_t* ptr, size_t size){
-    for(int i = 0; i < size; i++){
+void writeData_BufferedOutputStream(BufferedOutputStream *s, uint8_t* ptr, size_t size){
+    for(size_t i = 0; i < size; i++){
         if(isLittleEndian()){
             writeByte_BufferedOutputStream(s,ptr[size - i - 1] );
         }else{
@@ -214,4 +302,9 @@ size_t flush_BufferedOutputStream(BufferedOutputStream* s) {
     return s->flush(s->outputStream, s->buf, 0, s->pos);
 }
 
-size_t totalWritedSize_BufferdOutputStream(BufferedOutputStream* s) { return s->totalWritedBytes; }
+size_t totalWritedSize_BufferedOutputStream(BufferedOutputStream* s) { return s->totalWritedBytes; }
+void destroy_BufferedOutputStream(Move(BufferedOutputStream*) s){
+    if(s != NULL){
+        free(s);
+    }
+}
