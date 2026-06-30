@@ -100,7 +100,7 @@ struct MemoryOutputStream {
 };
 
 
-MemoryOutputStream* create_MemoryOutStream(void){
+MemoryOutputStream* create_MemoryOutputStream(void){
     MemoryOutputStream* ms = (MemoryOutputStream*) malloc(sizeof(MemoryOutputStream));
     ms->capacity = 64;
     ms->bytes = malloc(ms->capacity);
@@ -109,7 +109,7 @@ MemoryOutputStream* create_MemoryOutStream(void){
     return ms;
 }
 
-size_t flush_MemeoryOutStream(const void* stream, uint8_t* buf, size_t offset, size_t bufSize) {
+size_t flush_MemoryOutputStream(const void* stream, uint8_t* buf, size_t offset, size_t bufSize) {
     MemoryOutputStream* ctx = (MemoryOutputStream*)stream;
 
     for (size_t i = offset; i < bufSize; i++) {
@@ -127,11 +127,11 @@ size_t flush_MemeoryOutStream(const void* stream, uint8_t* buf, size_t offset, s
     return bufSize - offset;
 }
 
-void clear_MemoryOutStream(MemoryOutputStream* s) {
+void clear_MemoryOutputStream(MemoryOutputStream* s) {
     s->size = 0;
 }
 
-void destroy_MemoryOutStream(MemoryOutputStream* s) {
+void destroy_MemoryOutputStream(MemoryOutputStream* s) {
     if(s->bytes != NULL){
         free(s->bytes);
     }
@@ -140,7 +140,7 @@ void destroy_MemoryOutStream(MemoryOutputStream* s) {
 }
 
 
-Borrow(uint8_t*) borrowInternalBuf_MemoryOutStream(MemoryOutputStream* s, Out(size_t*) size){
+Borrow(uint8_t*) borrowInternalBuf_MemoryOutputStream(MemoryOutputStream* s, Out(size_t*) size){
     *size = s->size;
     return s->bytes;
 }
@@ -148,14 +148,14 @@ Borrow(uint8_t*) borrowInternalBuf_MemoryOutStream(MemoryOutputStream* s, Out(si
 /**
 * @brief Takes ownership of the buffer frome the stream. The array must be freed.
 */
-Move(uint8_t*) takeInternalBuf_MemoryOutStream(MemoryOutputStream* s, Out(size_t*) size){
+Move(uint8_t*) takeInternalBuf_MemoryOutputStream(MemoryOutputStream* s, Out(size_t*) size){
     *size = s->size;
     uint8_t* bytePtr = s->bytes;
-    clear_MemoryOutStream(s);
+    clear_MemoryOutputStream(s);
     return bytePtr;
 }
 
-size_t getSize_MemoryOutStream(MemoryOutputStream* s){
+size_t getSize_MemoryOutputStream(MemoryOutputStream* s){
     return s->size;
 }
 
@@ -167,9 +167,9 @@ void __debug_preOrderHuffmanTreeNode(HuffmanTreeNode* root) {
     }
 
     if (root->left == NULL && root->right == NULL) {
-        putchar(root->value);
+        printf("%d", root->value);
     } else {
-        putchar('0');
+        putchar('-');
     }
 
     __debug_preOrderHuffmanTreeNode(root->left);

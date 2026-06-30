@@ -7,7 +7,7 @@
 #include <stdint.h>
 #include "ownership.h"
 
-#define MAX_SYMBOL_SIZE 255
+#define MAX_SYMBOL_SIZE 256
 
 typedef struct FreqTable {
     uint64_t freq[MAX_SYMBOL_SIZE];
@@ -26,7 +26,7 @@ typedef struct HuffmanTreeNode {
     struct HuffmanTreeNode* right;
 } HuffmanTreeNode;
 
-HuffmanTreeNode* make_HuffmanTreeNode(int freq, int16_t value);
+HuffmanTreeNode* crate_HuffmanTreeNode(int freq, int16_t value);
 
 
 typedef struct HuffmanTreeType {

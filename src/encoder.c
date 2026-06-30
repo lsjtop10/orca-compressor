@@ -9,15 +9,14 @@
 void encodeStream_StreamEncoder(StreamEncoder* se, Borrow(HuffmanCodeTable*) ct) {
 
     // 더 이상 가져올 바이트가 없을 때까지
-    while (hasNextByte_BufferdInputStream(se->bis)) {
+    while (hasNextByte_BufferedInputStream(se->bis)) {
 
         // 0부터 size - 1까지 buf를 순회하면서
-        uint8_t symbol = nextByte_BufferdInputStream(se->bis);
+        uint8_t symbol = nextByte_BufferedInputStream(se->bis);
         HuffmanCode code = lookupCode_HuffmanCodeTable((HuffmanCodeTable*)ct, symbol);
         size_t length = lookupCodeLength_HuffmanCodeTable((HuffmanCodeTable*)ct, symbol);
 
         for (size_t j = 0; j < length; j++) {
-
             bool bit = getBit_HuffmanCode(code, j);
             writeBit_BufferedOutputStream(se->bos, bit);
         }
@@ -35,12 +34,12 @@ static void _serializeTree_HuffmanTreeSirializer(HuffmanTreeSirializer* s,
     if (htRoot == NULL) {
         val = -2;
         putchar('#');
-        writeData_BufferedOUtputStream(s->bos, (uint8_t*)&val, sizeof(int16_t));
+        writeData_BufferedOutputStream(s->bos, (uint8_t*)&val, sizeof(int16_t));
         return;
     }
 
     val = htRoot->value;
-    writeData_BufferedOUtputStream(s->bos, (uint8_t*)&val, sizeof(int16_t));
+    writeData_BufferedOutputStream(s->bos, (uint8_t*)&val, sizeof(int16_t));
     if(val == -1){putchar('0');}
     else{putchar(val);}
 

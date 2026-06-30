@@ -21,7 +21,7 @@ static uint8_t findNextSymbol(StreamDecoder* sd, Borrow(HuffmanTreeNode*) htRoot
     }
 
     bool hasNext = true;
-    bool bit = nextBit_BufferdInputStream(sd->bis);
+    bool bit = nextBit_BufferedInputStream(sd->bis);
     // TODO: 에러 전파 코드 필요.
     if (!hasNext) {
         return 0;
@@ -49,10 +49,10 @@ void decodeStream_StreamDecoder(StreamDecoder* sd, Borrow(HuffmanTreeNode*) htRo
 
 HuffmanTreeNode* deserializeTree_HuffmanTreeSirializer(HuffmanTreeDeSirializer* s){
     int16_t val = 0;
-    nextData_BufferdInputStream(s->bis,(uint8_t*)&val, sizeof(uint16_t));
+    nextData_BufferedInputStream(s->bis,(uint8_t*)&val, sizeof(uint16_t));
 
     if(val == -2){return NULL;}
-    HuffmanTreeNode* n = make_HuffmanTreeNode(0, val);
+    HuffmanTreeNode* n = crate_HuffmanTreeNode(0, val);
     
     n->left = deserializeTree_HuffmanTreeSirializer(s);
     n->right = deserializeTree_HuffmanTreeSirializer(s); 

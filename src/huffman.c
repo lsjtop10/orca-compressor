@@ -34,7 +34,7 @@ void count_FreqTable(FreqTable* t, Borrow(uint8_t*) str, size_t strSize) {
 uint64_t lookupFreq_FreqTable(FreqTable* t, uint8_t c) { return t->freq[c]; }
 
 
-HuffmanTreeNode* make_HuffmanTreeNode(int freq, int16_t value) {
+HuffmanTreeNode* crate_HuffmanTreeNode(int freq, int16_t value) {
     HuffmanTreeNode* n = (HuffmanTreeNode*)malloc(sizeof(HuffmanTreeNode));
 
     n->freq = freq;
@@ -49,11 +49,11 @@ HuffmanTreeNode* build_HuffmanTree(Borrow(FreqTable*) t) {
     PQueue h;
     init_PQueue(&h, hasLessFreq);
 
-    for (uint8_t i = 0; i < MAX_SYMBOL_SIZE; i++) {
+    for (int i = 0; i < MAX_SYMBOL_SIZE; i++) {
         uint64_t freq = lookupFreq_FreqTable((FreqTable*)t, i);
 
         if (freq != 0) {
-            insert_PQueue(&h, make_HuffmanTreeNode(freq, i));
+            insert_PQueue(&h, crate_HuffmanTreeNode(freq, i));
         }
     }
 
@@ -61,7 +61,7 @@ HuffmanTreeNode* build_HuffmanTree(Borrow(FreqTable*) t) {
         HuffmanTreeNode* n1 = delete_PQueue(&h);
         HuffmanTreeNode* n2 = delete_PQueue(&h);
 
-        HuffmanTreeNode* newNode = make_HuffmanTreeNode(n1->freq + n2->freq, -1);
+        HuffmanTreeNode* newNode = crate_HuffmanTreeNode(n1->freq + n2->freq, -1);
         newNode->left = n1;
         newNode->right = n2;
 

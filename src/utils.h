@@ -1,13 +1,15 @@
 #ifndef UTILS_H_INCLUDED
 #define UTILS_H_INCLUDED
 
-#include "ownership.h"
 #include <minwindef.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
+
+#include "ownership.h"
+#include "huffman.h"
 
 typedef enum PrintMode {
     bin,
@@ -36,16 +38,18 @@ void clear_MemoryInputStream(MemoryInputStream* const s);
 void destroy_MemoryInputStream(MemoryInputStream* const s);
 
 
-MemoryOutputStream* create_MemoryOutStream(void);
-size_t getSize_MemoryOutStream(MemoryOutputStream*);
-size_t flush_MemeoryOutStream(const void* stream, uint8_t* buf, size_t offset, size_t bufSize);
-void clear_MemoryOutStream(MemoryOutputStream* s);
-void destroy_MemoryOutStream(MemoryOutputStream* s);
+MemoryOutputStream* create_MemoryOutputStream(void);
+size_t getSize_MemoryOutputStream(MemoryOutputStream*);
+size_t flush_MemoryOutputStream(const void* stream, uint8_t* buf, size_t offset, size_t bufSize);
+void clear_MemoryOutputStream(MemoryOutputStream* s);
+void destroy_MemoryOutputStream(MemoryOutputStream* s);
 
-Borrow(uint8_t*) borrowInternalBuf_MemoryOutStream(MemoryOutputStream* s, Out(size_t*) size);
+Borrow(uint8_t*) borrowInternalBuf_MemoryOutputStream(MemoryOutputStream* s, Out(size_t*) size);
 /**
 * @brief Takes ownership of the buffer frome the stream. The array must be freed.
 */
-Move(uint8_t*) takeInternalBuf_MemoryOutStream(MemoryOutputStream* s, Out(size_t*) size);
+Move(uint8_t*) takeInternalBuf_MemoryOutputStream(MemoryOutputStream* s, Out(size_t*) size);
 
+
+void __debug_preOrderHuffmanTreeNode(HuffmanTreeNode* root);
 #endif
