@@ -2,9 +2,8 @@
     "C_Cpp.intelliSenseEngine": "disabled",
     "C_Cpp.default.configurationProvider": "mesonbuild.mesonbuild",
     "clangd.arguments": [
-        "--compile-commands-dir=${workspaceFolder}/build",
         "--completion-style=bundled",
         "--header-insertion=never"
-    ],
+            ],
     "C_Cpp.default.compileCommands": "c:\\Users\\lsjto\\source\\huffman-compression\\builddir/compile_commands.json"
 }

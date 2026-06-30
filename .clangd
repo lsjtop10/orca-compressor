@@ -1,5 +1,20 @@
 CompileFlags:
     CompilationDatabase: "builddir"
+---
+If:
+  PathMatch: [.*\.c, .*\.h]
+CompileFlags:
+  Add: [-std=c11, -xc]
+  Compiler: C:/UserBin/msys64/ucrt64/bin/gcc.exe
+---
+# 3. C++ 소스 파일(.cpp, .hpp)에 대한 규칙
+If:
+  PathMatch: [.*\.cpp, .*\.hpp]
+CompileFlags:
+  Add: [-std=c++17, -xc++]
+  Compiler: C:/UserBin/msys64/ucrt64/bin/g++.exe
+
+---
 Documentation:
     CommentFormat: Doxygen
 Diagnostics:
@@ -8,3 +23,5 @@ Diagnostics:
       "bugprone-*",
       "readability-duplicate-include"
     ]
+Index:  
+  Background: Build
