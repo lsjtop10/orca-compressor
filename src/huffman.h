@@ -26,7 +26,8 @@ typedef struct HuffmanTreeNode {
     struct HuffmanTreeNode* right;
 } HuffmanTreeNode;
 
-HuffmanTreeNode* crate_HuffmanTreeNode(int freq, int16_t value);
+HuffmanTreeNode* crate_HuffmanTreeNode(uint64_t freq, int16_t value);
+void destroy_HuffmanTreeNode(HuffmanTreeNode* root);
 
 
 typedef struct HuffmanTreeType {
@@ -39,8 +40,8 @@ HuffmanTreeNode* build_HuffmanTree(Borrow(FreqTable*) t);
 // 한 코드 length는 256bit 패턴을 담을 수 있어야 한다. 
 typedef struct{uint8_t bytes[32];} HuffmanCode;
 
-bool getBit_HuffmanCode(HuffmanCode code, int at);
-void setBit_HuffmanCode(HuffmanCode* code, int at, bool v);
+bool getBit_HuffmanCode(HuffmanCode code, size_t at);
+void setBit_HuffmanCode(HuffmanCode* code, size_t at, bool v);
 void print_HuffmanCode(HuffmanCode code, size_t length);
 
 typedef struct HuffmanCodeTable {
@@ -56,5 +57,5 @@ void buildTable_HuffmanCodeTable(HuffmanCodeTable* t, Borrow(HuffmanTreeNode*) h
 
 
 
-void _debug_dump_tree(Borrow(HuffmanTreeNode*) node, int depth);
+void debug_dump_tree(Borrow(HuffmanTreeNode*) node, int depth);
 #endif // HUFFMAN_H_INCLUDED

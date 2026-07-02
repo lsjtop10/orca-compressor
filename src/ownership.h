@@ -25,4 +25,15 @@
 // Out은 Borrow-Mut과 권한은 같지만 함수의 반환값 대신 주소 참조를 이용한다는 의미가 있다.
 #define Out(T) T const
 
+// 반환값을 무시하면 경고를 띄우는 메크로. 
+#if defined(__clang__) || defined(__GNUC__)
+    // Clang 및 GCC 계열 (UCRT64 / MinGW 환경 포함)
+    #define MustUse __attribute__((warn_unused_result))
+#elif defined(_MSC_VER)
+    // 윈도우 MSVC 컴파일러 환경
+    #define MustUse _Check_return_
+#else
+    #define MustUse
+#endif
+
 #endif // OWNERSHIP_H_INCLUDED

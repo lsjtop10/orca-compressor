@@ -34,7 +34,8 @@ void count_FreqTable(FreqTable* t, Borrow(uint8_t*) str, size_t strSize) {
 uint64_t lookupFreq_FreqTable(FreqTable* t, uint8_t c) { return t->freq[c]; }
 
 
-HuffmanTreeNode* crate_HuffmanTreeNode(int freq, int16_t value) {
+// NOLINTNEXTLINE(bugprone-easily-swappable-parameters)
+HuffmanTreeNode* crate_HuffmanTreeNode(uint64_t freq, int16_t value) {
     HuffmanTreeNode* n = (HuffmanTreeNode*)malloc(sizeof(HuffmanTreeNode));
 
     n->freq = freq;
@@ -45,11 +46,24 @@ HuffmanTreeNode* crate_HuffmanTreeNode(int freq, int16_t value) {
     return n;
 }
 
+// NOLINTNEXTLINE(misc-no-recursion)
+void destroy_HuffmanTreeNode(HuffmanTreeNode* root){
+
+    if(root == NULL){
+        return;
+    }
+
+    destroy_HuffmanTreeNode(root->left);
+    destroy_HuffmanTreeNode(root->right);
+
+    free(root);
+}
+
 HuffmanTreeNode* build_HuffmanTree(Borrow(FreqTable*) t) {
     PQueue h;
     init_PQueue(&h, hasLessFreq);
 
-    for (int i = 0; i < MAX_SYMBOL_SIZE; i++) {
+    for (int16_t i = 0; i < MAX_SYMBOL_SIZE; i++) {
         uint64_t freq = lookupFreq_FreqTable((FreqTable*)t, i);
 
         if (freq != 0) {
@@ -74,17 +88,17 @@ HuffmanTreeNode* build_HuffmanTree(Borrow(FreqTable*) t) {
 }
 
 
-bool getBit_HuffmanCode(HuffmanCode code, int at) { 
-    int idx = at / 8;
-    int offset = at % 8;
+bool getBit_HuffmanCode(HuffmanCode code, size_t at) { 
+    int idx = (int)(at / 8);
+    int offset = (int)(at % 8);
 
     return (code.bytes[idx] & (1 << (8 - offset - 1))) != 0; 
 }
 
-void setBit_HuffmanCode(HuffmanCode* code, int at, bool v) {
+void setBit_HuffmanCode(HuffmanCode* code, size_t at, bool v) {
 
-    int idx = at / 8;
-    int offset = at % 8;
+    int idx = (int)(at / 8);
+    int offset = (int)(at % 8);
 
     if (v) {
         code->bytes[idx] = code->bytes[idx] | (1 << (8 - offset - 1));
@@ -113,6 +127,7 @@ void setCode_HuffmanCodeTable(HuffmanCodeTable* t, uint8_t c, HuffmanCode code, 
     t->length[c] = length;
 }
 
+// NOLINTNEXTLINE(misc-no-recursion)
 void buildTable_HuffmanCodeTable(HuffmanCodeTable* t, Borrow(HuffmanTreeNode*) hTreeRoot, HuffmanCode code, size_t codeLength) {
     if (hTreeRoot == NULL) {
         return;
@@ -141,7 +156,8 @@ void buildTable_HuffmanCodeTable(HuffmanCodeTable* t, Borrow(HuffmanTreeNode*) h
 
 
 // 💡 [최종 합: 트리가 진짜 똑바로 생겼는지 숲을 보는 덤프 함수
-void _debug_dump_tree(Borrow(HuffmanTreeNode*) node, int depth) {
+// NOLINTNEXTLINE(misc-no-recursion)
+void debug_dump_tree(Borrow(HuffmanTreeNode*) node, int depth) {
     if (node == NULL) return;
 
     // 가독성을 위해 깊이만큼 들여쓰기 출력
@@ -155,10 +171,11 @@ void _debug_dump_tree(Borrow(HuffmanTreeNode*) node, int depth) {
         printf("├── [Internal] (combined freq: %llu)\n", node->freq);
     }
 
-    _debug_dump_tree(node->left, depth + 1);
-    _debug_dump_tree(node->right, depth + 1);
+    debug_dump_tree(node->left, depth + 1);
+    debug_dump_tree(node->right, depth + 1);
 }
 
+// NOLINTNEXTLINE(misc-no-recursion)
 void preOrder_HuffmanTree(HuffmanTreeNode* root) {
     if (root == NULL) {
         return;
