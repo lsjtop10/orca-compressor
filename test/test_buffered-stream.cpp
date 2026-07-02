@@ -6,31 +6,37 @@ extern "C"{
     #include "utils.h"
 }
 
-TEST(bufferedInputStream, shouldReadBitsAndBytes) {
 
-    auto dataSize = (size_t)(1024 * 1024 * 16);
-    std::vector<uint8_t> bigData(dataSize);
+TEST(bufferedOutputStream, shouldWriteString) {
 
-    std::mt19937 gen(1);
-    std::uniform_int_distribution<int> dis(0, 255);
+    const char* testStr = "Hello, World!";
+    size_t dataSize = strlen(testStr) + 1;
 
+    ErrorContext* err = create_ErrorContext();
+    ASSERT_NE(err, nullptr);
+    MemoryOutputStream* mos = create_MemoryOutputStream();
+    ASSERT_NE(mos, nullptr);
+    BufferedOutputStream* bos = create_BufferedOutputStream(mos, flush_MemoryOutputStream);
+    ASSERT_NE(bos, nullptr);
+    
     for (size_t i = 0; i < dataSize; i++) {
-        bigData[i] = dis(gen);
+        bool success = tryWriteByte_BufferedOutputStream(bos, testStr[i], err);
+        ASSERT_EQ(success, true);
     }
 
-    BufferedInputStream* bis;
-    MemoryInputStream* mis = create_MemoryInputStream();
+    flush_BufferedOutputStream(bos, err);
 
-    fill_MemeoryInputStream(mis, bigData.data(), dataSize);
-    bis = create_BufferedInputStream(mis, fetch_MemoryInputStream);
-
+    
+    size_t actualSize;
+    auto actual = (uint8_t*)borrowInternalBuf_MemoryOutputStream(mos, &actualSize);
+    
+    ASSERT_EQ(dataSize, actualSize);
     for (size_t i = 0; i < dataSize; i++) {
-        uint8_t actual = nextByte_BufferedInputStream(bis);
-        ASSERT_EQ(bigData[i], actual);
+        ASSERT_EQ(testStr[i], actual[i]);
     }
 
-    destroy_MemoryInputStream(mis);
-    destroy_BufferedInputStream(bis);
+    destroy_MemoryOutputStream(mos);
+    destroy_BufferedOutputStream(bos);
 }
 
 TEST(bufferedOutputStream, shouldWriteBitsAndBytes) {
@@ -45,15 +51,21 @@ TEST(bufferedOutputStream, shouldWriteBitsAndBytes) {
         bigData[i] = dis(gen);
     }
 
-    BufferedOutputStream* bos;
+    ErrorContext* err = create_ErrorContext();
+    ASSERT_NE(err, nullptr);
     MemoryOutputStream* mos = create_MemoryOutputStream();
-
-    bos = create_BufferedOutputStream(mos, flush_MemoryOutputStream);
+    ASSERT_NE(mos, nullptr);
+    BufferedOutputStream* bos = create_BufferedOutputStream(mos, flush_MemoryOutputStream);
+    ASSERT_NE(bos, nullptr);
+    
     for (size_t i = 0; i < dataSize; i++) {
-        writeByte_BufferedOutputStream(bos, bigData[i]);
+        bool success = tryWriteByte_BufferedOutputStream(bos, bigData[i], err);
+        ASSERT_EQ(success, true);
     }
 
-    flush_BufferedOutputStream(bos);
+    flush_BufferedOutputStream(bos, err);
+
+    
     size_t actualSize;
     auto actual = (uint8_t*)borrowInternalBuf_MemoryOutputStream(mos, &actualSize);
     
@@ -66,6 +78,62 @@ TEST(bufferedOutputStream, shouldWriteBitsAndBytes) {
     destroy_BufferedOutputStream(bos);
 }
 
+
+TEST(bufferedInputStream, shouldReadString) {
+    const char* testStr = "Hello, World!";
+    size_t dataSize = strlen(testStr) + 1;
+
+    BufferedInputStream* bis;
+    ErrorContext* err = create_ErrorContext();
+    MemoryInputStream* mis = create_MemoryInputStream();
+
+    fill_MemeoryInputStream(mis, (uint8_t*)testStr, dataSize);
+    bis = create_BufferedInputStream(mis, fetch_MemoryInputStream);
+
+    for (size_t i = 0; i < dataSize; i++) {
+        uint8_t actual;
+        bool success = tryNextByte_BufferedInputStream(bis,&actual, err);
+        ASSERT_EQ(success, true);
+        ASSERT_EQ(testStr[i], actual);
+    }
+
+    destroy_MemoryInputStream(mis);
+    destroy_BufferedInputStream(bis);
+    destroy_ErrorContext(err);
+}
+
+TEST(bufferedInputStream, shouldReadBitsAndBytes) {
+
+    auto dataSize = (size_t)(1024 * 1024 * 16);
+    std::vector<uint8_t> bigData(dataSize);
+
+    std::mt19937 gen(1);
+    std::uniform_int_distribution<int> dis(0, 255);
+
+    for (size_t i = 0; i < dataSize; i++) {
+        bigData[i] = dis(gen);
+    }
+
+    BufferedInputStream* bis;
+    ErrorContext* err = create_ErrorContext();
+    MemoryInputStream* mis = create_MemoryInputStream();
+
+    fill_MemeoryInputStream(mis, bigData.data(), dataSize);
+    bis = create_BufferedInputStream(mis, fetch_MemoryInputStream);
+
+    for (size_t i = 0; i < dataSize; i++) {
+        uint8_t actual;
+        bool success = tryNextByte_BufferedInputStream(bis,&actual, err);
+        ASSERT_EQ(success, true);
+        ASSERT_EQ(bigData[i], actual);
+    }
+
+    destroy_MemoryInputStream(mis);
+    destroy_BufferedInputStream(bis);
+    destroy_ErrorContext(err);
+}
+
+
 TEST(BufferedStreamUnit, ShouldMaintainDataIntegrityOnStreamPipelineReset) {
     // 1. 순수 단위 테스트용 데이터셋 준비 (1KB 원본 데이터)
     size_t dataSize = 1024;
@@ -76,6 +144,8 @@ TEST(BufferedStreamUnit, ShouldMaintainDataIntegrityOnStreamPipelineReset) {
     for (size_t i = 0; i < dataSize; i++) {
         srcData[i] = dis(gen);
     }
+
+    ErrorContext* err = create_ErrorContext();
 
     // 2. 최하부 물리 메모리 스트림 생성 (소유권 관리 대상)
 
@@ -99,12 +169,16 @@ TEST(BufferedStreamUnit, ShouldMaintainDataIntegrityOnStreamPipelineReset) {
 
     // BufferedInputStream에서 바이트를 한 부 씩 읽어 BufferedOutputStream으로 복사
     for (size_t i = 0; i < dataSize; i++) {
-        uint8_t byte = nextByte_BufferedInputStream(bis); // 규칙 반영 접두사 가상 매핑
-        writeByte_BufferedOutputStream(bos, byte);
+        uint8_t byte;
+        bool success = tryNextByte_BufferedInputStream(bis, &byte, err); // 규칙 반영 접두사 가상 매핑
+        ASSERT_EQ(success, true);
+        success = tryWriteByte_BufferedOutputStream(bos, byte, err);
+        ASSERT_EQ(success, true);
     }
 
     // 출력 버퍼의 잔여 데이터를 하부 MemoryOutputStream으로 완전히 방출
-    flush_BufferedOutputStream(bos);
+    flush_BufferedOutputStream(bos, err);
+    ASSERT_EQ(peekSurfaceError_ErrorContext(err), nullptr);
 
     // 하부 출력 버퍼의 내부 주소 및 크기 확보 (소유권 대여)
     size_t intermediateSize = 0;
@@ -128,17 +202,20 @@ TEST(BufferedStreamUnit, ShouldMaintainDataIntegrityOnStreamPipelineReset) {
 
 
     // STEP 3: [InputStream -> 최종 출력 검증] 2차 스트리밍
-
-    // 리셋된 스트림을 통해 다시 한 번 데이터를 이동시킴
     for (size_t i = 0; i < intermediateSize; i++) {
-        uint8_t byte = nextByte_BufferedInputStream(bis);
-        writeByte_BufferedOutputStream(bos, byte);
+        uint8_t byte;
+        bool success = tryNextByte_BufferedInputStream(bis, &byte, err); // 규칙 반영 접두사 가상 매핑
+        ASSERT_EQ(success, true);
+        success = tryWriteByte_BufferedOutputStream(bos, byte, err);
+        ASSERT_EQ(success, true);
     }
-    flush_BufferedOutputStream(bos);
+
+    flush_BufferedOutputStream(bos, err);
+    ASSERT_EQ(peekSurfaceError_ErrorContext(err), nullptr);
 
     // 최종 결과물 버퍼 추출 (소유권 영구 탈취)
     size_t finalSize = 0;
-    uint8_t* finalBytes = takeInternalBuf_MemoryOutputStream(mos, &finalSize);
+    const uint8_t* const finalBytes = borrowInternalBuf_MemoryOutputStream(mos, &finalSize);
     
 
     // 4. 최종 무결성 데이터 단언 (Assertion)
@@ -150,6 +227,7 @@ TEST(BufferedStreamUnit, ShouldMaintainDataIntegrityOnStreamPipelineReset) {
 
 
     // 5. 자원 정리 (수명 주기 해제)
+    destroy_ErrorContext(err);
     destroy_MemoryInputStream(mis);
     destroy_MemoryOutputStream(mos);
     destroy_BufferedInputStream(bis);
