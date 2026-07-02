@@ -8,6 +8,7 @@
 #include <string.h>
 #include <stdbool.h>
 
+#include "errors.h"
 #include "ownership.h"
 #include "huffman.h"
 
@@ -26,21 +27,21 @@ void printBin(uint8_t num);
 void printBuf(uint8_t* buf, size_t offset, size_t size, bool shouldPrintBin); 
 
 
-size_t flush_StdOutStream(const void* s, uint8_t* buf, size_t offset, size_t bufSize);
+size_t flush_StdOutStream(const void* s, uint8_t* buf, size_t offset, size_t bufSize, ErrorContext* err);
 
 typedef struct MemoryInputStream MemoryInputStream;
 typedef struct MemoryOutputStream MemoryOutputStream;
 
 MemoryInputStream* create_MemoryInputStream(void);
 void fill_MemeoryInputStream(MemoryInputStream* const s, Borrow(uint8_t*)  arr, size_t size);
-size_t fetch_MemoryInputStream(const void* stream, uint8_t* buf, size_t bufSize);
+size_t fetch_MemoryInputStream(const void* stream, uint8_t* buf, size_t bufSize, ErrorContext* err);
 void clear_MemoryInputStream(MemoryInputStream* const s);
 void destroy_MemoryInputStream(MemoryInputStream* const s);
 
 
 MemoryOutputStream* create_MemoryOutputStream(void);
 size_t getSize_MemoryOutputStream(MemoryOutputStream*);
-size_t flush_MemoryOutputStream(const void* stream, uint8_t* buf, size_t offset, size_t bufSize);
+size_t flush_MemoryOutputStream(const void* stream, uint8_t* buf, size_t offset, size_t bufSize, ErrorContext* err);
 void clear_MemoryOutputStream(MemoryOutputStream* s);
 void destroy_MemoryOutputStream(MemoryOutputStream* s);
 
@@ -52,4 +53,5 @@ Move(uint8_t*) takeInternalBuf_MemoryOutputStream(MemoryOutputStream* s, Out(siz
 
 
 void __debug_preOrderHuffmanTreeNode(HuffmanTreeNode* root);
+Move(char*) createFormattedString(const char* format, ...);
 #endif
