@@ -33,7 +33,7 @@ static inline Move(Error*) create_Error(ErrorCode code, Borrow(char*) msg) {
     elem->msg = strdup(msg);
     if (elem->msg == NULL) {
         // NOLINTNEXTLINE(cert-err33-c)
-        fputs("error: failed to dump error string\n", stderr);
+        fputs("print error: failed to dump message\n", stderr);
         goto err_strdup_msg;
     }
     return elem;
@@ -69,7 +69,7 @@ Move(ErrorContext*) create_ErrorContext(void) {
     ErrorContext* ctx = malloc(sizeof(ErrorContext));
     if (ctx == NULL) {
         // NOLINTNEXTLINE(cert-err33-c)
-        fputs("error: failed to create error context\n", stderr);
+        fputs("error context: failed to create context\n", stderr);
         goto err_malloc_ctx;
     }
     
@@ -79,7 +79,7 @@ Move(ErrorContext*) create_ErrorContext(void) {
     ctx->tail = create_Error(HF_ERR_UNKOWN, "TAIL");
     if (ctx->head == NULL || ctx->tail == NULL) {
         // NOLINTNEXTLINE(cert-err33-c)
-        fputs("error: failed to create error context\n", stderr);
+        fputs("error context: failed to create context\n", stderr);
         goto err_create_error_elem;
     }
 
@@ -210,7 +210,7 @@ void printFile_ErrorContext(ErrorContext* err, FILE* fp) {
 
     while (cur != err->tail) {
         // NOLINTNEXTLINE(cert-err33-c)
-        fprintf(fp, "Error: %s, code: %d s\n", cur->msg, cur->code);
+        fprintf(fp, "%s, code: %d s\n", cur->msg, cur->code);
         cur = cur->next;
     }
 }
