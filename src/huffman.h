@@ -14,7 +14,7 @@ typedef struct FreqTable {
 } FreqTable;
 
 void init_FreqTable(FreqTable* t);
-void count_FreqTable(FreqTable* t, Borrow(uint8_t*) str, size_t strSize);
+void accumulate_FreqTable(FreqTable* t, Borrow(uint8_t*) str, size_t strSize);void accumulate_FreqTable(FreqTable* t, Borrow(uint8_t*) bytes, size_t size);
 uint64_t lookupFreq_FreqTable(FreqTable* t, uint8_t c);
 
 

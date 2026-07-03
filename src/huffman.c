@@ -22,7 +22,7 @@ static void increseFreq_FreqTable(FreqTable* t, uint8_t b) { t->freq[b]++; }
 
 void init_FreqTable(FreqTable* t) { memset(t->freq, 0, sizeof(uint64_t) * MAX_SYMBOL_SIZE); }
 
-void count_FreqTable(FreqTable* t, Borrow(uint8_t*) str, size_t strSize) {
+void accumulate_FreqTable(FreqTable* t, Borrow(uint8_t*) str, size_t strSize) {
     for (size_t i = 0; i < strSize; i++) {
         increseFreq_FreqTable(t, str[i]);
     }
