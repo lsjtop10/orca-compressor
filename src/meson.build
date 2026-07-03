@@ -6,6 +6,7 @@ source_files = files(
     'utils.c',
     'buffered-stream.c', 
     'errors.c',
+    'serializer.c',
 )
 
 # 플랫폼 별 분기
