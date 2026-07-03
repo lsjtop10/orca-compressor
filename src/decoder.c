@@ -16,7 +16,7 @@ static bool tryFindNextSymbol(StreamDecoder* sd, Borrow(HuffmanTreeNode*) htRoot
     // 0도 symbol일 수 있지만 마땅히 내보낼 값이 없다. 나중에 에러 처리 로직 도입하면
     // 에러를 반환할 예정이다.
     if (htRoot == NULL) {
-        append_ErrorContext(err, HF_ERR_INVALID_ARG, "Error: htRoot is NULL");
+        append_ErrorContext(err, HF_ERR_INVALID_ARG, "decode stream: tree root is NULL");
         return false;
     }
 
@@ -32,7 +32,7 @@ static bool tryFindNextSymbol(StreamDecoder* sd, Borrow(HuffmanTreeNode*) htRoot
         if (isSurfaceCode_ErrorContext(err, HF_STATE_END_OF_STREAM)) {
             return false;
         }
-        append_ErrorContext(err, HF_ERR_UNKOWN, "Error: failed to read next bit from input stream");
+        append_ErrorContext(err, HF_ERR_UNKOWN, "decode stream: failed to read next bit");
         return false;
     }
 
@@ -42,7 +42,7 @@ static bool tryFindNextSymbol(StreamDecoder* sd, Borrow(HuffmanTreeNode*) htRoot
         return tryFindNextSymbol(sd, htRoot->right, symbol, err);
     } else {
         // 만약에 NextBit가 가라고 하는 방향에 노드가 없으면 에러.
-        append_ErrorContext(err, HF_ERR_UNKOWN, "Error: No valid node found for the next bit");
+        append_ErrorContext(err, HF_ERR_UNKOWN, "decode stream: invalid bit sequence for tree");
         return false;
     }
 }
@@ -53,35 +53,18 @@ void decodeStream_StreamDecoder(StreamDecoder* sd, Borrow(HuffmanTreeNode*) htRo
         uint8_t symbol;
         if (!tryFindNextSymbol(sd, htRoot, &symbol, err)) {
             // 에러 처리
-            append_ErrorContext(err, HF_ERR_UNKOWN, "Error: Failed to find next symbol");
+            append_ErrorContext(err, HF_ERR_UNKOWN, "decode stream: failed to find next symbol");
             return;
         }
         if (!tryWriteByte_BufferedOutputStream(sd->bos, symbol, err)) {
-            append_ErrorContext(err, HF_ERR_STREAM_FLUSH_FAILED, "Error: Failed to write byte to output stream");
+            append_ErrorContext(err, HF_ERR_STREAM_FLUSH_FAILED, "decode stream: failed to write byte to output");
             return;
         }
     }
 
     if(flush_BufferedOutputStream(sd->bos, err) == 0){
-        append_ErrorContext(err, HF_ERR_STREAM_FLUSH_FAILED, "Error: Failed to flush output stream");
+        append_ErrorContext(err, HF_ERR_STREAM_FLUSH_FAILED, "decode stream: failed to flush output stream");
         return;
     }
 }
-
-// NOLINTNEXTLINE(misc-no-recursion)
-HuffmanTreeNode* deserializeTree_HuffmanTreeSirializer(HuffmanTreeDeSirializer* s, ErrorContext* err) {
-    int16_t val = 0;
-
-    if(!tryNextData_BufferedInputStream(s->bis,(uint8_t*)&val, sizeof(uint16_t), err)) {
-        append_ErrorContext(err, HF_ERR_STREAM_FETCH_FAILED, "Error: Failed to read next data from input stream");
-        return NULL;
-    }
-
-    if(val == -2){return NULL;}
-    HuffmanTreeNode* n = crate_HuffmanTreeNode(0, val);
-    
-    n->left = deserializeTree_HuffmanTreeSirializer(s, err);
-    n->right = deserializeTree_HuffmanTreeSirializer(s, err); 
-
-    return n;
-}
+

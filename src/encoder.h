@@ -24,11 +24,6 @@ typedef struct StreamEncoder {
 }StreamEncoder;
 
 void encodeStream_StreamEncoder(StreamEncoder* se, Borrow(HuffmanCodeTable*) ct, ErrorContext* err);
-
-typedef struct{
-    BufferedOutputStream* bos;
-} HuffmanTreeSirializer;
-
-void serializeTree_HuffmanTreeSirializer(HuffmanTreeSirializer* ts, Borrow(HuffmanTreeNode*) htRoot, ErrorContext* err);
+void countFreqFromStream_StreamEncoder(BufferedInputStream* bis, Mut(FreqTable*) t, ErrorContext* err);
 
 #endif
