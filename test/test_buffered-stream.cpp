@@ -234,6 +234,57 @@ TEST(BufferedStreamUnit, ShouldMaintainDataIntegrityOnStreamPipelineReset) {
     destroy_BufferedOutputStream(bos);
 }
 
+TEST(BufferedStreamUnit, ShouldReadUntilLimit) {
+    // 1. 순수 단위 테스트용 데이터셋 준비 (1KB 원본 데이터)
+    size_t dataSize = 1024;
+    size_t limit = 512;
+
+    std::vector<uint8_t> srcData(dataSize);
+
+    std::mt19937 gen(42); // 재현 가능성을 위해 시드 고정
+    std::uniform_int_distribution<int> dis(0, 255);
+    for (size_t i = 0; i < dataSize; i++) {
+        srcData[i] = dis(gen);
+    }
+
+    ErrorContext* err = create_ErrorContext();
+
+    // 2. 최하부 물리 메모리 스트림 생성 (소유권 관리 대상)
+
+    MemoryInputStream* mis = create_MemoryInputStream();
+    ASSERT_NE(mis, nullptr);
+
+    fill_MemeoryInputStream(mis, (uint8_t*)srcData.data(), dataSize);
+
+    // 3. 상위 버퍼 스트림 객체 생성 및 래핑
+    BufferedInputStream* bis = create_BufferedInputStream(mis, fetch_MemoryInputStream);
+    ASSERT_NE(bis, nullptr);
+    setLimit_BufferedInputStream(bis, limit);
+
+
+    uint8_t byte;
+    size_t cnt = 0;
+
+    while (tryNextByte_BufferedInputStream(bis, &byte, err)) {
+        ASSERT_EQ(byte, srcData[cnt]);
+        cnt++;
+    }
+
+    ASSERT_EQ(cnt, limit);
+
+    clearLimit_BufferedInputStream(bis);
+    consumeSurfaceError_ErrorContext(err);
+
+    bool success = tryNextByte_BufferedInputStream(bis, &byte, err);
+    ASSERT_EQ(success, true);
+    ASSERT_EQ(byte, srcData[limit]);
+
+    // 5. 자원 정리 (수명 주기 해제)
+    destroy_ErrorContext(err);
+    destroy_MemoryInputStream(mis);
+    destroy_BufferedInputStream(bis);
+}
+
 
 
 

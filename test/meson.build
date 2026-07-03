@@ -1,5 +1,6 @@
 test_sources = files(
     'test_buffered-stream.cpp',
-    'test_encoder-decoder.cpp',
+     'test_encoder-decoder.cpp',
+     'test_errors.cpp'
 )
 

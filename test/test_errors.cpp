@@ -47,8 +47,8 @@ TEST(ErrorContext, ShouldPrintErrors) {
     
     printf("Menual Test:\n");
     printf("Printing errors: Expected\n");
-    printf("Error: Memory allocation failed, code: %d s\n", HF_ERR_MEMALLOC_FAILED);
-    printf("Error: Stream burst error, code: %d s\n", HF_ERR_STREAM_BURST);
+    printf("Memory allocation failed, code: %d s\n", HF_ERR_MEMALLOC_FAILED);
+    printf("Stream burst error, code: %d s\n", HF_ERR_STREAM_BURST);
 
     printf("\n");
     printf("Printing errors: Actual\n");
