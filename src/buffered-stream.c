@@ -354,6 +354,7 @@ bool tryWriteByte_BufferedOutputStream(BufferedOutputStream* s, uint8_t byte, Er
 
     s->buf[s->pos] = byte;
     s->pos++;
+    s->totalWritedBytes++;
     return true;
     
 err_flush:
@@ -400,7 +401,13 @@ size_t flush_BufferedOutputStream(BufferedOutputStream* s, ErrorContext* err) {
         }
     }
 
-    return s->flush(s->outputStream, s->buf, 0, s->pos, err);
+    size_t size = s->flush(s->outputStream, s->buf, 0, s->pos, err);
+    if (peekSurfaceError_ErrorContext(err) != NULL) {
+        append_ErrorContext(err, HF_ERR_STREAM_FLUSH_FAILED, "buffered-stream:failed flush stream");
+    }
+    s->pos = 0;
+    s->offset = 0;
+    return size;
 }
 
 size_t totalWritedSize_BufferedOutputStream(BufferedOutputStream* s) { return s->totalWritedBytes; }

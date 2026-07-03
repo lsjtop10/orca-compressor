@@ -46,6 +46,8 @@ size_t totalReadSize_BufferedInputStream(BufferedInputStream* s);
  */
 bool tryNextData_BufferedInputStream(BufferedInputStream* s, void* ptr, size_t size,
                                      ErrorContext* err);
+void setLimit_BufferedInputStream(BufferedInputStream* s, uint64_t limit);
+void clearLimit_BufferedInputStream(BufferedInputStream* s);
 void destroy_BufferedInputStream(Move(BufferedInputStream*) s);
 
 typedef struct BufferedOutputStream BufferedOutputStream;
