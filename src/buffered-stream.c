@@ -20,6 +20,9 @@ struct BufferedInputStream {
     size_t pos;
     int offset;
 
+    uint64_t limit;
+    bool hasLimit;
+
     /**
      *@brief Pointer to a struct containing context of the raw data stream.
      * `ownership`: borrow
@@ -62,10 +65,17 @@ void reset_BufferedInputStream(BufferedInputStream* s, Borrow(void*) inputStream
     s->offset = 0;
     s->pos = 0;
     s->totalReadBytes = 0;
+    s->limit = 0;
+    s->hasLimit = false;
 }
 
 static bool hasNextByte_BufferedInputStream(BufferedInputStream* s, ErrorContext* err) {
     if (peekSurfaceError_ErrorContext(err) != NULL) {
+        return false;
+    }
+
+    if (s->hasLimit && s->totalReadBytes >= s->limit) {
+        append_ErrorContext(err, HF_STATE_END_OF_STREAM, "Reached read limit of the stream.");
         return false;
     }
 
@@ -74,7 +84,20 @@ static bool hasNextByte_BufferedInputStream(BufferedInputStream* s, ErrorContext
         return true;
     }
 
-    s->bufSize = s->fetch(s->inputStream, s->buf, STREAM_BUFFER_CAPACITY,err);
+    size_t toFetch = STREAM_BUFFER_CAPACITY;
+    if (s->hasLimit) {
+        uint64_t remaining = s->limit - s->totalReadBytes;
+        if (remaining < STREAM_BUFFER_CAPACITY) {
+            toFetch = (size_t)remaining;
+        }
+    }
+
+    if (toFetch == 0) {
+        append_ErrorContext(err, HF_STATE_END_OF_STREAM, "Reached read limit of the stream.");
+        return false;
+    }
+
+    s->bufSize = s->fetch(s->inputStream, s->buf, toFetch, err);
 
     //  fetch는 성공했으나 읽어온 데이터가 0인 경우 (정상 스트림 종료)
     // 혹은 이미 하위 fetch에서 EOS 상태를 꽂아주었다면 그것도 포함
@@ -182,6 +205,16 @@ err_tryNextData_BufferedInputStream:
         return false;
     }
     return false;
+}
+
+void setLimit_BufferedInputStream(BufferedInputStream* s, uint64_t limit) {
+    s->limit = limit;
+    s->hasLimit = true;
+}
+
+void clearLimit_BufferedInputStream(BufferedInputStream* s) {
+    s->limit = 0;
+    s->hasLimit = false;
 }
 
 size_t totalReadSize_BufferedInputStream(BufferedInputStream* s) { return s->totalReadBytes; }
